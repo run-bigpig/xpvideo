@@ -1,0 +1,19 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "xp-video",
+  "outputfilename": "xp-video",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "syskey",
+    "email": "syskeykala@gmail.com"
+  },
+  "info": {
+    "companyName": "",
+    "productName": "",
+    "productVersion": "",
+    "copyright": "copyright by xp-video"
+  }
+}

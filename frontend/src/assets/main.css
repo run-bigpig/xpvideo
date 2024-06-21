@@ -1,0 +1,9 @@
+html, body {
+    overflow: hidden;
+}
+
+/* For webkit browsers */
+::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
