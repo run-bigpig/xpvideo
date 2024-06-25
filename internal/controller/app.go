@@ -9,6 +9,7 @@ import (
 	"github.com/run-bigpig/xpvideo/internal/utils"
 	"github.com/spf13/viper"
 	"strconv"
+	"strings"
 )
 
 type AppController struct {
@@ -29,6 +30,9 @@ func (ac *AppController) Class() *types.Response {
 		return utils.Fail(400, err)
 	}
 	for _, item := range class.Class {
+		if strings.Contains(item.TypeName, "伦理") {
+			continue
+		}
 		response = append(response, &types.ClassResponse{
 			Id:   item.TypeId,
 			Pid:  item.TypePid,
