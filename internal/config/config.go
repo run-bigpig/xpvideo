@@ -2,82 +2,98 @@ package config
 
 import (
 	"encoding/json"
+	"github.com/run-bigpig/xpvideo/internal/constant"
 	"github.com/run-bigpig/xpvideo/internal/types"
 	"github.com/run-bigpig/xpvideo/internal/utils"
-	"os"
-	"slices"
+	"github.com/spf13/viper"
+	"io"
+	"net/http"
 	"sync"
 )
 
-var (
-	once       sync.Once
-	globalConf *Config
+const (
+	ConfigFile = "config.yaml"
 )
 
-type Config struct {
-	Source        []*types.Source
-	DefaultSource *types.Source
+var (
+	once sync.Once
+)
+
+type SourceConfig struct {
+	List []*types.Source `yaml:"list"`
 }
 
-func Set() {
+type Config struct {
+	Source *SourceConfig `yaml:"source"`
+}
+
+func Init() {
 	once.Do(func() {
-		globalConf = &Config{}
-		makeDefaultSource()
-		parseJson("./source.json")
-		for _, v := range globalConf.Source {
-			SetDefaultSource(v.Key)
-			break
+		viper.SetConfigFile(ConfigFile)
+		viper.SetConfigType("yaml")
+		viper.AddConfigPath("./")
+		if !utils.FileExists("./" + ConfigFile) {
+			makeDefaultConfig()
+		}
+		if err := viper.ReadInConfig(); err != nil {
+			panic(err)
 		}
 	})
 }
 
-func SetDefaultSource(source string) {
-	for _, v := range globalConf.Source {
-		if v.Key == source {
-			globalConf.DefaultSource = v
-			break
-		}
-	}
-}
-
-func Get() *Config {
-	return globalConf
-}
-
-func parseJson(path string) {
-	data, err := os.ReadFile(path)
+// 生成默认配置
+func makeDefaultConfig() {
+	c := &Config{}
+	c.Source = &SourceConfig{}
+	list, err := getHttpSourceList()
 	if err != nil {
 		panic(err)
 	}
-	source := make([]*types.Source, 0)
-	err = json.Unmarshal(data, &source)
+	c.Source.List = list
+	viper.SetDefault("source", c.Source)
+	err = viper.WriteConfig()
 	if err != nil {
 		panic(err)
 	}
-	keyMap := make(map[string]struct{})
-	//移除有相同key的source
-	for index, v := range source {
-		if _, ok := keyMap[v.Key]; ok {
-			source = slices.Delete(source, index, index+1)
-			continue
-		}
-		keyMap[v.Key] = struct{}{}
-	}
-	globalConf.Source = source
 }
 
-// 初始化默认配置
-func makeDefaultSource() {
-	if !utils.FileExists("./source.json") {
-		defaultSource := []*types.Source{{
-			Name: "360资源站",
-			Key:  "360zy",
-			Url:  "https://360zy.com/api.php/provide/vod",
-		}}
-		data, err := json.Marshal(defaultSource)
-		if err != nil {
-			panic(err)
-		}
-		err = os.WriteFile("./source.json", data, 0644)
+// GetDefaultSourceUrl 获取默认源
+func GetDefaultSourceUrl() string {
+	var sourceList []*types.Source
+	err := viper.UnmarshalKey("source.list", &sourceList)
+	if err != nil {
+		return ""
 	}
+	for _, source := range sourceList {
+		if source.Default {
+			return source.Url
+		}
+	}
+	if len(sourceList) > 0 {
+		return sourceList[0].Url
+	}
+	list, err := getHttpSourceList()
+	if err == nil {
+		return list[0].Url
+	}
+	return ""
+}
+
+func getHttpSourceList() ([]*types.Source, error) {
+	var list []*types.Source
+	//获取默认源
+	resp, err := http.Get(constant.DefaultUrl)
+	defer resp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(body, &list)
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
 }

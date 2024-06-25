@@ -1,6 +1,7 @@
 <script setup>
 import Sider  from "@/components/Sider.vue";
 import {ref} from "vue";
+import {IconSearch} from '@arco-design/web-vue/es/icon';
 import router from "@/router/index.js";
 const search = ref(true)
 const keyword = ref('')
@@ -21,7 +22,11 @@ const searchKeyword = () => {
     <a-layout>
       <a-layout style="padding: 0;">
         <a-layout-header :style="{textAlign:'center'}" v-show=search>
-          <a-input-search v-model="keyword" :style="{width:'500px'}" placeholder="请输入您要搜索的内容" search-button @search="searchKeyword"></a-input-search>
+          <a-input-search v-model="keyword" :style="{width:'500px',background:'rgba(0,0,0,0.05)'}" placeholder="请输入您要搜索的内容" @search="searchKeyword" @keyup.enter="searchKeyword">
+            <template #button-icon>
+              <IconSearch style="font-size: 20px"/>
+            </template>
+          </a-input-search>
         </a-layout-header>
         <a-layout-content><RouterView /></a-layout-content>
       </a-layout>
@@ -33,17 +38,6 @@ const searchKeyword = () => {
 .layout-main {
   height: 100vh;
   background: var(--color-fill-2);
-}
-
-.layout-main :deep(.arco-layout-sider-light) .logo{
-  height: 32px;
-  margin: 16px;
-  background: rgba(255,255,255);
-  font-family: Candara,serif;
-  border-radius: 6px;
-  display: flex;
-  font-size: 32px;
-  color: #74b9ff;
 }
 .layout-main :deep(.arco-layout-header)  {
   height: 64px;

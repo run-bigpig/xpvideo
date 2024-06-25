@@ -7,7 +7,7 @@ type Response struct {
 }
 
 type Source struct {
-	Name string `json:"name"`
-	Url  string `json:"url"`
-	Key  string `json:"key"`
+	Url     string `json:"url"`
+	Name    string `json:"name"`
+	Default bool   `json:"default,omitempty"`
 }

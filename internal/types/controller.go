@@ -51,10 +51,9 @@ type Play struct {
 }
 
 type SourceResponse struct {
-	List    []*Source `json:"list"`
-	Default *Source   `json:"default"`
+	List []*Source `json:"list"`
 }
 
 type SettingRequest struct {
-	Source string `json:"source"`
+	Sources []*Source `json:"sources"`
 }

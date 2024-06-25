@@ -13,10 +13,9 @@ import (
 var assets embed.FS
 
 func main() {
-	// Create application with options
 	app := bootstrap.NewBoot()
 	err := wails.Run(&options.App{
-		MinWidth:  1080,
+		MinWidth:  1440,
 		MinHeight: 768,
 		Windows: &windows.Options{
 			DisableWindowIcon: true,

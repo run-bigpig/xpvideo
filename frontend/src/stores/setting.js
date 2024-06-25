@@ -3,7 +3,8 @@ import {defineStore} from "pinia";
 
 export const useSettingStore = defineStore("setting",()=>{
     const setting  = ref({
-        source:""
+        sources:[],
+        refresh:0
     })
     const getSetting = computed(()=>{
         return setting.value
@@ -13,8 +14,9 @@ export const useSettingStore = defineStore("setting",()=>{
             if (setting.value[i] === data[i]){
                 continue
             }
-            setting.value[i] = data[i]
+            setting.value[i] = {...data[i]}
         }
+        setting.value.refresh++
     }
     return {
         setting,

@@ -2,10 +2,12 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"github.com/run-bigpig/xpvideo/internal/config"
 	"github.com/run-bigpig/xpvideo/internal/core"
 	"github.com/run-bigpig/xpvideo/internal/types"
 	"github.com/run-bigpig/xpvideo/internal/utils"
+	"github.com/spf13/viper"
 	"strconv"
 )
 
@@ -21,7 +23,7 @@ func NewAppController(ctx context.Context) *AppController {
 
 func (ac *AppController) Class() *types.Response {
 	var response []*types.ClassResponse
-	s := core.NewSpider(config.Get().DefaultSource.Url)
+	s := core.NewSpider(config.GetDefaultSourceUrl())
 	class, err := s.Class()
 	if err != nil {
 		return utils.Fail(400, err)
@@ -41,7 +43,7 @@ func (ac *AppController) List(req types.ListRequest) *types.Response {
 		listItems []*types.ListItem
 		response  types.ListResponse
 	)
-	s := core.NewSpider(config.Get().DefaultSource.Url)
+	s := core.NewSpider(config.GetDefaultSourceUrl())
 	list, err := s.DetailList(&types.VodListRequest{
 		Page:     req.Page,
 		PageSize: req.PageSize,
@@ -70,7 +72,7 @@ func (ac *AppController) Detail(req types.DetailRequest) *types.Response {
 	var (
 		response types.DetailResponse
 	)
-	s := core.NewSpider(config.Get().DefaultSource.Url)
+	s := core.NewSpider(config.GetDefaultSourceUrl())
 	detail, err := s.Detail(&types.VodDetailRequest{
 		Ids: strconv.Itoa(req.Id),
 	})
@@ -96,7 +98,7 @@ func (ac *AppController) Search(req types.SearchRequest) *types.Response {
 		listItems []*types.ListItem
 		response  types.ListResponse
 	)
-	s := core.NewSpider(config.Get().DefaultSource.Url)
+	s := core.NewSpider(config.GetDefaultSourceUrl())
 	list, err := s.Search(&types.VodSearchRequest{
 		Keyword:  req.Keyword,
 		Page:     req.Page,
@@ -122,13 +124,31 @@ func (ac *AppController) Search(req types.SearchRequest) *types.Response {
 }
 
 func (ac *AppController) GetSourceList() *types.Response {
+	var (
+		list []*types.Source
+	)
+	err := viper.UnmarshalKey("source.list", &list)
+	if err != nil {
+		return utils.Fail(400, err)
+	}
 	return utils.Success(&types.SourceResponse{
-		List:    config.Get().Source,
-		Default: config.Get().DefaultSource,
+		List: list,
 	})
 }
 
 func (ac *AppController) Setting(req types.SettingRequest) *types.Response {
-	config.SetDefaultSource(req.Source)
+	if len(req.Sources) <= 0 {
+		return utils.Fail(400, errors.New("sources is empty"))
+	}
+	for _, item := range req.Sources {
+		if item.Url == "" || item.Name == "" {
+			return utils.Fail(400, errors.New("source is empty"))
+		}
+	}
+	viper.Set("source.list", req.Sources)
+	err := viper.WriteConfig()
+	if err != nil {
+		return utils.Fail(400, err)
+	}
 	return utils.Success("ok")
 }

@@ -11,13 +11,13 @@ type Boot struct {
 }
 
 func NewBoot() *Boot {
+	// 初始化配置
+	config.Init()
 	return &Boot{}
 }
 
 func (b *Boot) Startup(ctx context.Context) {
 	b.ctx = ctx
-	// 初始化配置
-	config.Set()
 }
 
 func (b *Boot) NewController() *controller.AppController {

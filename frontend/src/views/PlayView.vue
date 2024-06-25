@@ -136,7 +136,8 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   color: #4E5969;
-  background-color: #F2F3F5;
+  box-sizing: border-box;
+  border: 1px solid #81ecec;
   text-align: center;
   white-space: nowrap; /* 禁止文本换行 */
   overflow: hidden; /* 隐藏溢出内容 */
@@ -145,14 +146,14 @@ onMounted(() => {
 }
 
 .button:hover {
-  background-color: #3498db;
-  color:whitesmoke;
+  background-color: #81ecec;
+  color:white;
   opacity: 1;
 }
 
 .active {
-  background-color: #3498db;
-  color:whitesmoke;
+  background-color: #81ecec;
+  color:white;
   opacity: 1;
 }
 
